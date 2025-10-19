@@ -1,0 +1,17 @@
+# 不上传环境变量文件
+.env
+
+# Python 缓存文件
+__pycache__/
+*.pyc
+*.pyo
+
+# 虚拟环境文件夹（如果你有）
+venv/
+.env/
+
+# 系统文件
+.DS_Store
+
+# VSCode 配置文件（如果有）
+.vscode/
