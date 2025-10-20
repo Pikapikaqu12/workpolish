@@ -12,13 +12,44 @@ MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 client = genai.Client(api_key=API_KEY) if API_KEY else genai.Client()
 
 st.set_page_config(page_title="WorkPolish (Gemini)", layout="centered")
+st.markdown(
+    """
+    <style>
+    /* page background and text color */
+    html, body, .stApp {
+        background-color: #ffffff;
+        color: #000000;
+    }
+    /* main container background (in case of theming) */
+    .css-18e3th9 {  /* Streamlit main block */
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+    /* headings and subheaders */
+    h1, h2, h3, h4, h5, h6 {
+        color: #000000 !important;
+    }
+    /* style the download button and primary button */
+    button[kind="primary"] {
+        background-color: #111111 !important;
+        color: #ffffff !important;
+    }
+    /* text area text color */
+    textarea, input[type="text"] {
+        color: #000000 !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.title("✨ WorkPolish — AI Workplace Writing Assistant (Gemini)")
 st.write("Polish your professional emails, chat messages, and slides. Choose tone/context and click 'Polish'.")
 
 # UI components
 user_text = st.text_area("Enter text to polish:", height=200)
 tone = st.selectbox("Target tone", ["More formal", "More concise", "More polite", "More persuasive", "More casual"])
-context = st.selectbox("Context", ["Email to manager", "Message to teammate", "Email to client", "PPT text", "Chat message"])
+context = st.selectbox("Context", ["Email to manager", "Message to manager","Message to teammate", "Email to business", "PPT text", "Chat message"])
 show_notes = st.checkbox("Show edit notes (2-3 bullets)", value=True)
 
 def build_prompt(text: str, tone: str, context: str, show_notes: bool) -> str:
