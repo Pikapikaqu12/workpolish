@@ -152,11 +152,6 @@ if st.button("Polish ✨"):
                 max_chars=None,
                 key="polished_text",
             )
-            components.html(f"""
-    <button onclick="navigator.clipboard.writeText(`{cleaned.replace('`','\\`')}`)">
-        📋 Copy to clipboard
-    </button>
-""", height=50)
             # show edit notes if requested and parsed
             if show_notes:
                 st.subheader("✏️ Edit notes")
