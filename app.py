@@ -144,7 +144,7 @@ if st.button("Polish ✨"):
 
             # show polished result clearly
             st.subheader("✅ Polished result")
-            st.markdown(f"```\n{polished_text}\n```")
+            st.markdown(polished_text.replace("\n", "  \n"))
 
             # show edit notes if requested and parsed
             if show_notes:
