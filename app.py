@@ -144,6 +144,7 @@ if st.button("Polish ✨"):
 
             # show polished result clearly
             st.subheader("✅ Polished result")
+            cleaned = polished_text.strip().strip('"')
             st.markdown(
                  f"""
             <div style="background-color:#f5f5f5;
