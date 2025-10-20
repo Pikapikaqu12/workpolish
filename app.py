@@ -143,10 +143,10 @@ if st.button("Polish ✨"):
             polished_text, notes = parse_polished_and_notes(raw_output if raw_output else "")
 
             # show polished result clearly
-            cleaned = polished_text.strip().strip('"')
             st.subheader("✅ Polished result")
+            cleaned = polished_text.strip().strip('"')
             st.text_area(
-                label="",
+                label="Polished text:",
                 value=cleaned,
                 height=200,
                 max_chars=None,
