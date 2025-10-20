@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import streamlit as st
 from google import genai
+import re
 
 # Load environment variables
 load_dotenv()
@@ -12,36 +13,37 @@ MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 client = genai.Client(api_key=API_KEY) if API_KEY else genai.Client()
 
 st.set_page_config(page_title="WorkPolish (Gemini)", layout="centered")
-st.markdown(
-    """
-    <style>
-    /* page background and text color */
-    html, body, .stApp {
-        background-color: #ffffff;
-        color: #000000;
-    }
-    /* main container background (in case of theming) */
-    .css-18e3th9 {  /* Streamlit main block */
-        background-color: #ffffff !important;
-        color: #000000 !important;
-    }
-    /* headings and subheaders */
-    h1, h2, h3, h4, h5, h6 {
-        color: #000000 !important;
-    }
-    /* style the download button and primary button */
-    button[kind="primary"] {
-        background-color: #111111 !important;
-        color: #ffffff !important;
-    }
-    /* text area text color */
-    textarea, input[type="text"] {
-        color: #000000 !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+st.markdown("""
+<style>
+body, .stApp {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+textarea, .stTextArea textarea {
+    background-color: #f8f8f8 !important;
+    color: #000000 !important;
+    border-radius: 8px !important;
+    border: 1px solid #cccccc !important;
+    font-size: 16px !important;
+}
+
+div[data-testid="stMarkdownContainer"] p {
+    color: #000000 !important;
+}
+
+button[kind="primary"], div.stButton button {
+    background-color: #007bff !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    border: none !important;
+}
+
+div.stButton button:hover {
+    background-color: #0056b3 !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ---- header ----
 st.title("✨ WorkPolish — AI Workplace Writing Assistant (Gemini)")
