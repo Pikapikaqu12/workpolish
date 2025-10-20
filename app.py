@@ -151,7 +151,6 @@ if st.button("Polish ✨"):
                 height=200,
                 max_chars=None,
                 key="polished_text",
-                disabled=True 
             )
             # show edit notes if requested and parsed
             if show_notes:
