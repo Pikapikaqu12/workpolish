@@ -147,10 +147,12 @@ if st.button("Polish ✨"):
             cleaned = polished_text.strip().strip('"')
             st.markdown(
                  f"""
-            <div style="background-color:#f5f5f5;
+            <div style="
+                 background-color:#f5f5f5;
                  padding:15px;
                  border-radius:8px;
                  white-space: pre-wrap;
+                 text-align: left;
                  font-family: monospace;
             ">
             {cleaned}
