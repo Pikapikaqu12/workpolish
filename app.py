@@ -20,6 +20,7 @@ body, .stApp {
     color: #000000 !important;
 }
 
+/* Text area styling */
 textarea, .stTextArea textarea {
     background-color: #f8f8f8 !important;
     color: #000000 !important;
@@ -28,19 +29,32 @@ textarea, .stTextArea textarea {
     font-size: 16px !important;
 }
 
+/* General text */
 div[data-testid="stMarkdownContainer"] p {
     color: #000000 !important;
 }
 
-button[kind="primary"], div.stButton button {
+/* Buttons (Polish + Download) */
+div.stButton button, div[data-testid="stDownloadButton"] button {
     background-color: #007bff !important;
     color: #ffffff !important;
     border-radius: 8px !important;
     border: none !important;
+    padding: 0.6em 1.2em !important;
+    font-weight: 600 !important;
+    font-size: 16px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+    transition: all 0.2s ease-in-out;
 }
 
-div.stButton button:hover {
+div.stButton button:hover, div[data-testid="stDownloadButton"] button:hover {
     background-color: #0056b3 !important;
+    transform: translateY(-1px);
+}
+
+/* Make buttons look distinct but aligned */
+div[data-testid="stDownloadButton"] button::before {
+    content: "⬇️ ";
 }
 </style>
 """, unsafe_allow_html=True)
