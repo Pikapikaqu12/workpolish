@@ -66,7 +66,7 @@ st.write("Polish your professional emails, chat messages, and slides. Choose ton
 # ---- UI components ----
 user_text = st.text_area("Enter text to polish:", height=200)
 tone = st.selectbox("Target tone", ["More formal", "More concise", "More polite", "More persuasive", "More casual"])
-context = st.selectbox("Context", ["Email to manager", "Message to teammate", "Email to client", "PPT text", "Chat message"])
+context = st.selectbox("Context", ["Email to manager","Message to manager", "Message to teammate", "Email to business", "PPT text", "Chat message"])
 show_notes = st.checkbox("Show edit notes (2-3 bullets)", value=True)
 
 def build_prompt(text: str, tone: str, context: str, show_notes: bool) -> str:
@@ -144,7 +144,20 @@ if st.button("Polish ✨"):
 
             # show polished result clearly
             st.subheader("✅ Polished result")
-            st.markdown(polished_text.replace("\n", "  \n"))
+            st.markdown(
+                 f"""
+            <div style="background-color:#f5f5f5;
+                 padding:15px;
+                 border-radius:8px;
+                 white-space: pre-wrap;
+                 font-family: monospace;
+            ">
+            {polished_text}
+            </div>
+            """,
+                unsafe_allow_html=True
+                )
+            st.code(polished_text, language="text")
 
             # show edit notes if requested and parsed
             if show_notes:
