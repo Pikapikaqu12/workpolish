@@ -1,28 +1,17 @@
-# app.py
 import os
-import re
 from dotenv import load_dotenv
 import streamlit as st
 from google import genai
 
-# ---- load env and init client ----
+# Load environment variables
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
-# If no API key, give a friendly notice in UI and stop
-if not API_KEY:
-    st.set_page_config(page_title="WorkPolish (Gemini)", layout="centered")
-    st.title("✨ WorkPolish — AI Workplace Writing Assistant (Gemini)")
-    st.error("Missing GEMINI_API_KEY. Please set GEMINI_API_KEY in environment or Streamlit Secrets.")
-    st.stop()
+# Initialize client
+client = genai.Client(api_key=API_KEY) if API_KEY else genai.Client()
 
-client = genai.Client(api_key=API_KEY)
-
-# ---- page config and simple CSS to force white background & black text ----
 st.set_page_config(page_title="WorkPolish (Gemini)", layout="centered")
-
-# CSS: white background, black text, adjust container width and button styles slightly
 st.markdown(
     """
     <style>
