@@ -145,23 +145,13 @@ if st.button("Polish ✨"):
             # show polished result clearly
             st.subheader("✅ Polished result")
             cleaned = polished_text.strip().strip('"')
-            st.markdown(
-                 f"""
-            <div style="
-                 background-color:#f5f5f5;
-                 padding:15px;
-                 border-radius:8px;
-                 white-space: pre-wrap;
-                 text-align: left;
-                 font-family: monospace;
-            ">
-            {cleaned}
-            </div>
-            """,
-                unsafe_allow_html=True
+            st.text_area(
+                label="Polished text:",
+                value=cleaned,
+                height=200,
+                max_chars=None,
+                key="polished_text",
             )
-            st.code(cleaned, language="text")
-
             # show edit notes if requested and parsed
             if show_notes:
                 st.subheader("✏️ Edit notes")
