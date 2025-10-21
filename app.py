@@ -78,6 +78,11 @@ def build_prompt(text: str, tone: str, context: str, show_notes: bool) -> str:
         f"- Do not invent new facts or add content not present in the original text.\n\n"
         f"Original:\n\"\"\"\n{text}\n\"\"\"\n\n"
     )
+    if "Email" in context:
+        prompt += (
+            "Also produce a short email subject line on its own line prefixed by 'Subject:'.\n"
+            "Then provide the polished email body. "
+        )
     if show_notes:
         prompt += "Output format:\n1) Polished text\n2) 2-3 short bullet points describing key edits\n"
     else:
