@@ -119,6 +119,7 @@ def parse_polished_and_notes(raw: str):
     return text, []
 
 # ---- action ----
+# ---- action (replace the existing if st.button block) ----
 if st.button("Polish ✨"):
     if not user_text.strip():
         st.warning("Please enter some text to polish.")
@@ -127,18 +128,76 @@ if st.button("Polish ✨"):
         prompt = build_prompt(user_text, tone, context, show_notes)
         try:
             response = client.models.generate_content(model=MODEL, contents=prompt)
-            raw_output = response.text if hasattr(response, "text") else str(response)
 
-            # 1) extract subject if email context
-            subject, remaining = (None, raw_output)
-            if "Email" in context:
+            # --- robust extraction of raw text from response ---
+            raw_output = ""
+            # preferred simple attribute
+            if hasattr(response, "text") and response.text:
+                raw_output = response.text
+            # try common structures
+            elif hasattr(response, "output") and isinstance(response.output, list) and len(response.output) > 0:
+                try:
+                    # many SDKs: response.output[0].content[0].text
+                    raw_output = response.output[0].content[0].text
+                except Exception:
+                    # fallback to str()
+                    raw_output = str(response.output)
+            elif hasattr(response, "candidates") and isinstance(response.candidates, list) and len(response.candidates) > 0:
+                try:
+                    raw_output = response.candidates[0].content[0].text
+                except Exception:
+                    raw_output = str(response.candidates)
+            else:
+                # last resort
+                raw_output = str(response)
+
+            raw_output = raw_output.strip()
+
+            # --- extract subject if email context ---
+            subject = None
+            remaining = raw_output
+            if "Email" in context and raw_output:
                 subject, remaining = extract_subject(raw_output)
+                # if extraction left remaining empty, try another heuristic:
+                if subject and (not remaining or remaining.strip() == ""):
+                    # attempt to remove only the subject line and keep rest after first blank line
+                    lines = raw_output.splitlines()
+                    # remove first line if it contains subject content
+                    if len(lines) > 1:
+                        # find first empty line index
+                        try:
+                            empty_idx = next(i for i,l in enumerate(lines[1:], start=1) if l.strip() == "")
+                            remaining = "\n".join(lines[empty_idx+1:]).strip()
+                        except StopIteration:
+                            # fallback: everything after first line
+                            remaining = "\n".join(lines[1:]).strip()
 
-            # 2) parse polished text and notes from remaining
+            # --- parse polished text and notes from remaining ---
             polished_text, notes = parse_polished_and_notes(remaining)
 
-            # 3) clean polished_text (strip quotes and surrounding whitespace)
-            polished_text = polished_text.strip().strip('"')
+            # --- fallback strategies if polished_text is empty ---
+            if not polished_text or polished_text.strip() == "":
+                # 1) try using 'remaining' directly (maybe model returned body with no numbered format)
+                if remaining and remaining.strip():
+                    polished_text = remaining.strip()
+                # 2) otherwise, try using the entire raw_output (model might have returned plain polished text)
+                elif raw_output:
+                    polished_text = raw_output
+                # 3) as last resort, try extracting from response.output/candidates again
+                else:
+                    # try safe conversions
+                    try:
+                        if hasattr(response, "output"):
+                            polished_text = str(response.output)
+                        elif hasattr(response, "candidates"):
+                            polished_text = str(response.candidates)
+                        else:
+                            polished_text = str(response)
+                    except Exception:
+                        polished_text = ""
+
+            # clean final polished_text
+            polished_text = (polished_text or "").strip().strip('"')
 
             # ---- display Subject if present ----
             if subject:
@@ -147,7 +206,6 @@ if st.button("Polish ✨"):
 
             # ---- display polished email/text ----
             st.subheader("✅ Polished result")
-            # show as disabled text_area (no label) to preserve wrapping and allow easy copy/select
             st.text_area(label="", value=polished_text, height=200, key="polished_result", disabled=True)
 
             # ---- display edit notes if requested ----
@@ -157,8 +215,12 @@ if st.button("Polish ✨"):
                     for n in notes:
                         st.markdown(f"- {n}")
                 else:
-                    st.write("No structured notes parsed. Raw output:")
-                    st.write(raw_output)
+                    # if no structured notes, show a short tail or the raw_output
+                    if raw_output and raw_output != polished_text:
+                        st.write("Notes / Raw output:")
+                        st.write(raw_output)
+                    else:
+                        st.write("No structured notes parsed.")
 
             # ---- download button ----
             st.download_button("⬇️ Download result", data=polished_text, file_name="polished_text.txt", mime="text/plain", key="download_result")
