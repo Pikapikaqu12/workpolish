@@ -195,15 +195,48 @@ if st.button("Polish ✨"):
             # Parse polished text and notes from remaining text
             polished_text, notes = parse_polished_and_notes(remaining)
 
+            # ---------- CLEANUP: ensure notes are not part of polished_text ----------
+            # If polished_text likely still contains notes, split it off at common separators.
+            # Split at '2)', '2.', 'Edit notes', 'Key edits', or a line that starts with '-' or '*'
+            split_re = re.compile(r"(\n\s*2[\)\.]|\n\s*Edit notes[:\-]?|\n\s*Key edits[:\-]?|\n\s*(?:-|\*)(?:\s|$))", flags=re.I)
+            parts = split_re.split(polished_text or "")
+            if parts and len(parts) > 0:
+                # parts[0] is the text before any recognized note marker
+                polished_before = parts[0].strip()
+                if polished_before:
+                    polished_text = polished_before
+
+                # if notes empty, try to capture the trailing part as notes
+                if (not notes or len(notes) == 0) and len(parts) > 1:
+                    trailing = "".join(parts[1:]).strip()
+                    # split trailing by lines and clean bullet markers
+                    candidate_notes = [re.sub(r"^\s*[-\*\d\.\)\(]+\s*", "", s).strip()
+                                       for s in re.split(r"[\n\r]+", trailing) if s.strip()]
+                    if candidate_notes:
+                        notes = candidate_notes
+
             # Fallbacks if polished_text empty
             if not polished_text or polished_text.strip() == "":
+                # prefer the 'remaining' chunk (which is raw_output without subject)
                 if remaining and remaining.strip():
-                    polished_text = remaining.strip()
+                    # remove potential trailing notes from remaining as above
+                    rem_parts = split_re.split(remaining)
+                    polished_text = rem_parts[0].strip() if rem_parts else remaining.strip()
+                    # and set notes from trailing if empty
+                    if (not notes or len(notes) == 0) and len(rem_parts) > 1:
+                        trailing = "".join(rem_parts[1:]).strip()
+                        notes = [re.sub(r"^\s*[-\*\d\.\)\(]+\s*", "", s).strip()
+                                 for s in re.split(r"[\n\r]+", trailing) if s.strip()]
                 elif raw_output:
-                    polished_text = raw_output
+                    # last resort: take raw_output but strip notes
+                    raw_parts = split_re.split(raw_output)
+                    polished_text = raw_parts[0].strip() if raw_parts else raw_output.strip()
+                    if (not notes or len(notes) == 0) and len(raw_parts) > 1:
+                        trailing = "".join(raw_parts[1:]).strip()
+                        notes = [re.sub(r"^\s*[-\*\d\.\)\(]+\s*", "", s).strip()
+                                 for s in re.split(r"[\n\r]+", trailing) if s.strip()]
                 else:
-                    # last resort: try showing response as string
-                    polished_text = str(response)
+                    polished_text = str(response).strip()
 
             # Clean final polished_text
             cleaned = (polished_text or "").strip().strip('"')
@@ -215,7 +248,7 @@ if st.button("Polish ✨"):
 
             # ---- display polished email/text (no label inside text_area) ----
             st.subheader("✅ Polished result")
-            st.text_area(label="polished_text", value=cleaned, height=200, max_chars=None, key="polished_text")
+            st.text_area(label="", value=cleaned, height=200, max_chars=None, key="polished_text", disabled=True)
 
             # ---- display edit notes if requested ----
             if show_notes:
@@ -224,7 +257,7 @@ if st.button("Polish ✨"):
                     for n in notes:
                         st.markdown(f"- {n}")
                 else:
-                    # if no parsed notes but raw_output contains extra info, show a short fallback
+                    # if still no parsed notes but raw_output contains extra info, show a short fallback
                     if raw_output and raw_output != cleaned:
                         st.write("Notes / Raw output:")
                         st.write(raw_output)
