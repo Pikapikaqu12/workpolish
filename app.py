@@ -215,7 +215,7 @@ if st.button("Polish ✨"):
 
             # ---- display polished email/text (no label inside text_area) ----
             st.subheader("✅ Polished result")
-            st.text_area(label="", value=cleaned, height=200, max_chars=None, key="polished_text")
+            st.text_area(label="polished_text", value=cleaned, height=200, max_chars=None, key="polished_text")
 
             # ---- display edit notes if requested ----
             if show_notes:
