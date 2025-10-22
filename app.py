@@ -27,6 +27,7 @@ textarea, .stTextArea textarea {
     border-radius: 8px !important;
     border: 1px solid #cccccc !important;
     font-size: 16px !important;
+    caret-color: #000000 !important;
 }
 
 /* General text */
