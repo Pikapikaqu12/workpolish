@@ -65,7 +65,19 @@ st.title("✨ WorkPolish — AI Workplace Writing Assistant (Gemini)")
 st.write("Polish your professional emails, chat messages, and slides. Choose tone/context and click 'Polish'.")
 
 # ---- UI components ----
+if "history" not in st.session_state:
+    st.session_state.history = []
 user_text = st.text_area("Enter text to polish:", height=200, placeholder="Type or paste your text here...")
+recent_input = st.selectbox(
+    "Or select from recent inputs:",
+    [""] + st.session_state.history,
+    index=0
+)
+
+# 如果用户选了历史文本，覆盖输入框内容
+if recent_input:
+    user_text = recent_input
+
 tone = st.selectbox("Target tone", ["More formal", "More concise", "More polite", "More persuasive", "More casual"])
 context = st.selectbox("Context", [
     "Email to manager",
@@ -171,7 +183,11 @@ if st.button("Polish ✨"):
     if not user_text.strip():
         st.warning("Please enter some text to polish.")
     else:
-        st.info("Calling Gemini...")
+        if user_text not in st.session_state.history:
+            st.session_state.history.insert(0, user_text)  # 插入到最前面
+            # 保留最多10条
+            st.session_state.history = st.session_state.history[:10]
+            st.info("Calling Gemini...")
         prompt = build_prompt(user_text, tone, context, show_notes)
         try:
             # call the model
