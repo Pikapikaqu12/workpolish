@@ -65,7 +65,7 @@ st.title("✨ WorkPolish — AI Workplace Writing Assistant (Gemini)")
 st.write("Polish your professional emails, chat messages, and slides. Choose tone/context and click 'Polish'.")
 
 # ---- UI components ----
-user_text = st.text_area("Enter text to polish:", height=200)
+user_text = st.text_area("Enter text to polish:", height=200, placeholder="Type or paste your text here...")
 tone = st.selectbox("Target tone", ["More formal", "More concise", "More polite", "More persuasive", "More casual"])
 context = st.selectbox("Context", [
     "Email to manager",
