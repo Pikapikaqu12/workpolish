@@ -75,6 +75,15 @@ context = st.selectbox("Context", [
     "PPT text",
     "Chat message"
 ])
+
+# ---- Model selection: Flash vs Pro ----
+model_options = {
+    "Gemini Flash": "gemini-2.5-flash",
+    "Gemini Pro": "gemini-2.5-pro"
+}
+selected_model_name = st.selectbox("Select AI Model", list(model_options.keys()), index=0)
+MODEL = model_options[selected_model_name]
+
 show_notes = st.checkbox("Show edit notes (2-3 bullets)", value=True)
 
 def build_prompt(text: str, tone: str, context: str, show_notes: bool) -> str:
