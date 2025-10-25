@@ -4,6 +4,11 @@ import streamlit as st
 from google import genai
 import re
 
+
+def contains_chinese(text: str) -> bool:
+    if not text:
+        return False
+    return bool(re.search(r'[\u4e00-\u9fff]', text))
 # Load environment variables
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
@@ -98,23 +103,35 @@ MODEL = model_options[selected_model_name]
 
 show_notes = st.checkbox("Show edit notes (2-3 bullets)", value=True)
 
-def build_prompt(text: str, tone: str, context: str, show_notes: bool) -> str:
+def build_prompt(text: str, tone: str, context: str, show_notes: bool, translate_to_english: bool=False) -> str:
+    """
+    If translate_to_english is True, instruct the model to first translate from Chinese to English,
+    then polish the English result to the requested tone/context.
+    """
+    translation_instruction = ""
+    if translate_to_english:
+        translation_instruction = (
+            "First translate the input (Chinese) into clear, natural English. "
+            "Then polish the translated English to match the requested tone and context. "
+        )
     prompt = (
         "You are a professional workplace writing assistant. "
+        f"{translation_instruction}"
         "Polish the text for clarity, tone, and conciseness while keeping the original meaning strictly unchanged.\n\n"
         f"- Target tone: {tone}\n"
         f"- Context: {context}\n"
-        f"- Do not invent new facts or add content not present in the original text.\n\n"
-        f"Original:\n\"\"\"\n{text}\n\"\"\"\n\n"
+        "- Respond in English.\n"
+        "- Do not invent new facts or add content not present in the original text.\n\n"
+        "Original:\n\"\"\"\n" + text + "\n\"\"\"\n\n"
     )
-    # If context is email-like, ask model to also produce a short Subject line prefixed by "Subject:"
+    # If email-like, ask for subject in English too
     if "Email" in context:
         prompt += (
-            "Also produce a short email subject line (<= 8 words) on its own line prefixed by 'Subject:'.\n"
-            "Then provide the polished email body.\n\n"
+            "Also produce a short email subject line (<= 8 words) prefixed by 'Subject:'.\n"
+            "Then provide the polished email body in English.\n\n"
         )
     if show_notes:
-        prompt += "Output format:\n1) Polished text (or Polished Email body)\n2) 2-3 short bullet points describing key edits\n"
+        prompt += "Output format:\n1) Polished text (in English)\n2) 2-3 short bullet points describing key edits\n"
     else:
         prompt += "Output format: Polished text only.\n"
     return prompt
@@ -188,7 +205,11 @@ if st.button("Polish ✨"):
             # 保留最多10条
             st.session_state.history = st.session_state.history[:10]
             st.info("Calling Gemini...")
-        prompt = build_prompt(user_text, tone, context, show_notes)
+        # detect if user input contains Chinese
+        need_translate = contains_chinese(user_text)
+
+        # build prompt with translation instruction when needed
+        prompt = build_prompt(user_text, tone, context, show_notes, translate_to_english=need_translate)
         try:
             # call the model
             response = client.models.generate_content(model=MODEL, contents=prompt)
