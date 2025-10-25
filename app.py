@@ -73,6 +73,8 @@ st.write("Polish your professional emails, chat messages, and slides. Choose ton
 if "history" not in st.session_state:
     st.session_state.history = []
 user_text = st.text_area("Enter text to polish:", height=200, placeholder="Type or paste your text here...")
+if contains_chinese(user_text):
+    st.info("Detected Chinese input — the app will translate to English and then polish the English output.")
 recent_input = st.selectbox(
     "Or select from recent inputs:",
     [""] + st.session_state.history,
