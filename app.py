@@ -326,6 +326,7 @@ if st.button("Polish ✨"):
                     else:
                         st.write("No structured notes parsed.")
             # Persist record to SQLite (if DB initialized)
+            input_text = re.sub(r'\b\d{15,19}\b', '[REDACTED]', user_text)
             try:
                 if st.session_state.get("db_conn"):
                     save_record(
