@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 import streamlit as st
 from google import genai
 import re
-
+import uuid
+from storage_sqlite import init_db, save_record
 
 def contains_chinese(text: str) -> bool:
     if not text:
@@ -64,6 +65,18 @@ div[data-testid="stDownloadButton"] button::before {
 }
 </style>
 """, unsafe_allow_html=True)
+
+# ---- initialize SQLite + session id ----
+if "db_conn" not in st.session_state:
+    try:
+        st.session_state.db_conn = init_db()
+    except Exception as e:
+        st.session_state.db_conn = None
+        st.warning(f"SQLite initialization failed: {e}")
+
+# create a stable session_id for this browser session (persist in session_state)
+if "session_id" not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
 
 # ---- header ----
 st.title("✨ WorkPolish — AI Workplace Writing Assistant (Gemini)")
@@ -312,7 +325,24 @@ if st.button("Polish ✨"):
                         st.write(raw_output)
                     else:
                         st.write("No structured notes parsed.")
-
+            # Persist record to SQLite (if DB initialized)
+            try:
+                if st.session_state.get("db_conn"):
+                    save_record(
+                        st.session_state.db_conn,
+                        session_id=st.session_state.get("session_id", "anon"),
+                        input_text=user_text,
+                        language="zh->en" if contains_chinese(user_text) else "en",
+                        context=context,
+                        tone=tone,
+                        model=MODEL,
+                        subject=subject if 'subject' in locals() else None,
+                        polished_text=cleaned,
+                        notes=notes if 'notes' in locals() else []
+                    )
+            except Exception as e:
+                # don't break UX if saving fails; just warn
+                st.warning(f"Failed to save record: {e}")# ---- save to SQLite
             # ---- download button ----
             st.download_button("Download result (.txt)", data=cleaned, file_name="polished_text.txt", mime="text/plain", key="download_result")
 
