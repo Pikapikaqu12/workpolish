@@ -15,8 +15,3 @@ venv/
 
 # VSCode 配置文件（如果有）
 .vscode/
-
-workpolish_records.db
-service-account.json
-*.db
-*.sqlite
